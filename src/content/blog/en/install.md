@@ -1,6 +1,6 @@
 ---
 title: Installation
-desc: Getting started with Kiwi
+desc: Getting started with Manul
 date: 2026-01-06
 ---
 
@@ -9,7 +9,7 @@ date: 2026-01-06
 Run the following command to download and install the binary:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://kiwi.dev/install.sh | sh
+curl --proto '=https' --tlsv1.2 -sSf https://manul-lang.org/install.sh | sh
 ```
 
 ### 2. Configure Shell
@@ -20,10 +20,10 @@ source ~/.zshrc
 ```
 
 ### 3. Verify Installation
-Confirm that Kiwi was installed correctly by checking the version:
+Confirm that Manul was installed correctly by checking the version:
 
 ```bash
-kiwi --version
+manul --version
 ```
 
 ### 4. Quick Start
@@ -31,17 +31,17 @@ Create and deploy a basic "Hello World" project to ensure everything is working.
 
 **Initialize Project:**
 ```bash
-mkdir kiwi-test
-cd kiwi-test
+mkdir manul-test
+cd manul-test
 mkdir src
 
 # Create a sample file
-cat << EOF > test.kiwi
+cat << EOF > test.manul
 class Product(var name: string)
 EOF
 
 # Deploy
-kiwi deploy
+manul deploy
 ```
 
 **Test Endpoint:**

@@ -19,8 +19,9 @@ const lang = getLangFromUrl(Astro.url)
     selects.forEach(select => {
         select.addEventListener('change', (e) => {
             const target = e.target as HTMLSelectElement
-            var lang = target.value
-            window.location.href = `/${lang}`
+            const lang = target.value
+            const path = lang === 'en' ? '/' : `/${lang}`
+            window.location.href = path
         })
     })
 </script>

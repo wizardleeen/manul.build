@@ -1,13 +1,13 @@
 # ==========================================
-# Kiwi Programming Language Installer (Windows)
+# Manul Programming Language Installer (Windows)
 # ==========================================
 
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$KiwiVersion = "0.0.1"
-$Repo = "kiwi-language/kiwi"
-$InstallDir = "$env:USERPROFILE\.kiwi"
+$ManulVersion = "0.0.1"
+$Repo = "manul-language/manul"
+$InstallDir = "$env:USERPROFILE\.manul"
 $BinDir = "$InstallDir\bin"
 
 # Colors for Output
@@ -16,7 +16,7 @@ function Write-Red ($text) { Write-Host $text -ForegroundColor Red }
 function Write-Blue ($text) { Write-Host $text -ForegroundColor Cyan }
 function Write-Yellow ($text) { Write-Host $text -ForegroundColor Yellow }
 
-Write-Blue "Starting Kiwi Installer (v$KiwiVersion)..."
+Write-Blue "Starting Manul Installer (v$ManulVersion)..."
 
 # -----------------------------------------------------------------------------
 # 1. Detect OS & Arch
@@ -25,26 +25,26 @@ $Arch = $env:PROCESSOR_ARCHITECTURE
 $AssetName = ""
 
 if ($Arch -eq "AMD64") {
-    $AssetName = "kiwi-windows-amd64.zip"
+    $AssetName = "manul-windows-amd64.zip"
 } elseif ($Arch -eq "ARM64") {
     # Assuming arm64 support exists in your release assets
-    $AssetName = "kiwi-windows-arm64.zip"
+    $AssetName = "manul-windows-arm64.zip"
 } else {
     Write-Red "Error: Architecture $Arch is not supported."
     exit 1
 }
 
-$DownloadUrl = "https://github.com/$Repo/releases/download/$KiwiVersion/$AssetName"
+$DownloadUrl = "https://github.com/$Repo/releases/download/$ManulVersion/$AssetName"
 
 # -----------------------------------------------------------------------------
 # 2. Pre-Check: Stop existing services to release file locks
 # -----------------------------------------------------------------------------
 # Unlike Linux, Windows cannot overwrite running executables.
 Write-Host "Checking for running processes..."
-$RunningProcess = Get-Process -Name "kiwi-server" -ErrorAction SilentlyContinue
+$RunningProcess = Get-Process -Name "manul-server" -ErrorAction SilentlyContinue
 if ($RunningProcess) {
-    Write-Yellow "Stopping running kiwi-server..."
-    Stop-Process -Name "kiwi-server" -Force
+    Write-Yellow "Stopping running manul-server..."
+    Stop-Process -Name "manul-server" -Force
 }
 
 # -----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ if ($RunningProcess) {
 # -----------------------------------------------------------------------------
 $TempDir = [System.IO.Path]::GetTempPath()
 $ZipFile = Join-Path $TempDir $AssetName
-$ExtractDir = Join-Path $TempDir "kiwi_extract"
+$ExtractDir = Join-Path $TempDir "manul_extract"
 
 Write-Host "Downloading " -NoNewline; Write-Blue $AssetName
 try {
@@ -114,10 +114,10 @@ if ($CurrentPath -split ';' -notcontains $PathToAdd) {
 # 6. Configure Service (Scheduled Task)
 # -----------------------------------------------------------------------------
 # On Windows, we use a User Scheduled Task to mimic systemd --user / LaunchAgents
-Write-Host "Configuring " -NoNewline; Write-Blue "kiwi-server" -NoNewline; Write-Host " as a background task..."
+Write-Host "Configuring " -NoNewline; Write-Blue "manul-server" -NoNewline; Write-Host " as a background task..."
 
-$TaskName = "KiwiLanguageServer"
-$ExePath = "$BinDir\kiwi-server.exe"
+$TaskName = "ManulLanguageServer"
+$ExePath = "$BinDir\manul-server.exe"
 
 if (Test-Path $ExePath) {
     # Unregister existing if present
@@ -132,24 +132,24 @@ if (Test-Path $ExePath) {
     $Trigger = New-ScheduledTaskTrigger -AtLogOn
 
     # Register the task (RunLevel Limited is fine for user space, doesn't need admin)
-    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Description "Kiwi Language Server" | Out-Null
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Description "Manul Language Server" | Out-Null
 
     # Start it now
     Start-ScheduledTask -TaskName $TaskName
     Write-Green "Service configured and started."
 } else {
-    Write-Red "Warning: kiwi-server.exe not found in bin directory."
+    Write-Red "Warning: manul-server.exe not found in bin directory."
 }
 
 # -----------------------------------------------------------------------------
 # 7. Completion
 # -----------------------------------------------------------------------------
 Write-Host ""
-Write-Green "Kiwi installed successfully!"
+Write-Green "Manul installed successfully!"
 Write-Host "Service is running as user: $env:USERNAME"
 
 if ($EnvUpdateRequired) {
-    Write-Yellow "Action Required: Restart your terminal (PowerShell/CMD) to use the 'kiwi' command."
+    Write-Yellow "Action Required: Restart your terminal (PowerShell/CMD) to use the 'manul' command."
 } else {
-    Write-Blue "You can run 'kiwi' immediately."
+    Write-Blue "You can run 'manul' immediately."
 }

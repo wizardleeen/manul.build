@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # ==========================================
-# Kiwi Programming Language Installer
+# Manul Programming Language Installer
 # ==========================================
 
 set -e
 
-KIWI_VERSION="0.0.1"
-REPO="kiwi-language/kiwi"
-INSTALL_DIR="$HOME/.kiwi"
+MANUL_VERSION="0.0.1"
+REPO="manul-language/manul"
+INSTALL_DIR="$HOME/.manul"
 BIN_LINK_DIR="$HOME/.local/bin"
 
 # Colors
@@ -18,7 +18,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-printf "${BLUE}Starting Kiwi Installer (v${KIWI_VERSION})...${NC}\n"
+printf "${BLUE}Starting Manul Installer (v${MANUL_VERSION})...${NC}\n"
 
 # -----------------------------------------------------------------------------
 # 1. Detect OS & Arch
@@ -29,14 +29,14 @@ ASSET_NAME=""
 
 if [ "$OS" = "Linux" ]; then
     if [ "$ARCH" = "x86_64" ]; then
-        ASSET_NAME="kiwi-linux-amd64.zip"
+        ASSET_NAME="manul-linux-amd64.zip"
     else
         printf "${RED}Error: Linux architecture $ARCH is not supported yet.${NC}\n"
         exit 1
     fi
 elif [ "$OS" = "Darwin" ]; then
     if [ "$ARCH" = "arm64" ]; then
-        ASSET_NAME="kiwi-macos-aarch64.zip"
+        ASSET_NAME="manul-macos-aarch64.zip"
     else
         printf "${RED}Error: macOS architecture $ARCH (Intel) is not supported.${NC}\n"
         exit 1
@@ -46,7 +46,7 @@ else
     exit 1
 fi
 
-DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${KIWI_VERSION}/${ASSET_NAME}"
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${MANUL_VERSION}/${ASSET_NAME}"
 
 # -----------------------------------------------------------------------------
 # 2. Check Dependencies
@@ -108,19 +108,19 @@ link_binary() {
     chmod +x "$SOURCE"
 }
 
-link_binary "kiwi"
-link_binary "kiwi-server"
+link_binary "manul"
+link_binary "manul-server"
 
 # -----------------------------------------------------------------------------
 # 6. Configure Service
 # -----------------------------------------------------------------------------
-printf "Configuring ${BLUE}kiwi-server${NC} as a service...\n"
+printf "Configuring ${BLUE}manul-server${NC} as a service...\n"
 
 if [ "$OS" = "Darwin" ]; then
     # --- macOS: LaunchAgents (User specific) ---
     LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
-    PLIST_PATH="${LAUNCH_AGENT_DIR}/com.kiwi.server.plist"
-    LOG_DIR="$HOME/Library/Logs/Kiwi"
+    PLIST_PATH="${LAUNCH_AGENT_DIR}/com.manul.server.plist"
+    LOG_DIR="$HOME/Library/Logs/Manul"
     mkdir -p "$LAUNCH_AGENT_DIR"
     mkdir -p "$LOG_DIR"
 
@@ -130,10 +130,10 @@ if [ "$OS" = "Darwin" ]; then
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.kiwi.server</string>
+    <string>com.manul.server</string>
     <key>ProgramArguments</key>
     <array>
-        <string>${INSTALL_DIR}/bin/kiwi-server</string>
+        <string>${INSTALL_DIR}/bin/manul-server</string>
     </array>
     <key>WorkingDirectory</key>
     <string>${INSTALL_DIR}</string>
@@ -142,9 +142,9 @@ if [ "$OS" = "Darwin" ]; then
     <key>KeepAlive</key>
     <true/>
     <key>StandardErrorPath</key>
-    <string>${LOG_DIR}/kiwi-server.log</string>
+    <string>${LOG_DIR}/manul-server.log</string>
     <key>StandardOutPath</key>
-    <string>${LOG_DIR}/kiwi-server.log</string>
+    <string>${LOG_DIR}/manul-server.log</string>
 </dict>
 </plist>
 EOF
@@ -156,17 +156,17 @@ elif [ "$OS" = "Linux" ]; then
     # --- Linux: systemd --user ---
     if command -v systemctl > /dev/null; then
         SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
-        SERVICE_PATH="${SYSTEMD_USER_DIR}/kiwi-server.service"
+        SERVICE_PATH="${SYSTEMD_USER_DIR}/manul-server.service"
         mkdir -p "$SYSTEMD_USER_DIR"
 
         cat > "$SERVICE_PATH" <<EOF
 [Unit]
-Description=Kiwi Language Server (User)
+Description=Manul Language Server (User)
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=${INSTALL_DIR}/bin/kiwi-server
+ExecStart=${INSTALL_DIR}/bin/manul-server
 WorkingDirectory=${INSTALL_DIR}
 Restart=always
 
@@ -175,8 +175,8 @@ WantedBy=default.target
 EOF
         # Reload systemd user daemon
         systemctl --user daemon-reload
-        systemctl --user enable kiwi-server
-        systemctl --user restart kiwi-server
+        systemctl --user enable manul-server
+        systemctl --user restart manul-server
     else
         printf "${YELLOW}Warning: systemd not found. Service not started automatically.${NC}\n"
     fi
@@ -226,18 +226,18 @@ add_to_path() {
 
     # Check if PATH is already configured
     if grep -q "$BIN_LINK_DIR" "$cfg"; then
-        printf "${GREEN}Checked: ${cfg} already contains Kiwi path.${NC}\n"
+        printf "${GREEN}Checked: ${cfg} already contains Manul path.${NC}\n"
     else
-        printf "Adding Kiwi path to ${BLUE}${cfg}${NC}...\n"
+        printf "Adding Manul path to ${BLUE}${cfg}${NC}...\n"
 
         # Append specific syntax based on shell
         if [ "$shell_type" = "fish" ]; then
             echo "" >> "$cfg"
-            echo "# Kiwi Programming Language" >> "$cfg"
+            echo "# Manul Programming Language" >> "$cfg"
             echo "set -gx PATH \"$BIN_LINK_DIR\" \$PATH" >> "$cfg"
         else
             echo "" >> "$cfg"
-            echo "# Kiwi Programming Language" >> "$cfg"
+            echo "# Manul Programming Language" >> "$cfg"
             echo "export PATH=\"\$PATH:$BIN_LINK_DIR\"" >> "$cfg"
         fi
     fi
@@ -249,17 +249,17 @@ add_to_path "$SHELL_CONFIG" "$DETECTED_SHELL"
 # -----------------------------------------------------------------------------
 # 8. Completion & Instructions
 # -----------------------------------------------------------------------------
-printf "\n${GREEN}Kiwi installed successfully!${NC}\n"
+printf "\n${GREEN}Manul installed successfully!${NC}\n"
 printf "Service is running as current user: $(whoami)\n"
 
 # Verify current session PATH
 case ":$PATH:" in
     *":$BIN_LINK_DIR:"*)
         # Already in path (rare for fresh install unless previously set)
-        printf "You can run ${BLUE}kiwi${NC} immediately.\n"
+        printf "You can run ${BLUE}manul${NC} immediately.\n"
         ;;
     *)
-        printf "${YELLOW}Action Required:${NC} To use 'kiwi' in this terminal, run:\n"
+        printf "${YELLOW}Action Required:${NC} To use 'manul' in this terminal, run:\n"
         printf "\n    ${BLUE}${REFRESH_CMD}${NC}\n\n"
         ;;
 esac

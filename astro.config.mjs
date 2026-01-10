@@ -8,7 +8,7 @@ import icon from 'astro-icon';
 import expressiveCode from 'astro-expressive-code';
 import fs from 'node:fs';
 
-const kiwiGrammar = JSON.parse(fs.readFileSync('./kiwi.tmLanguage.json', 'utf-8'));
+const manulGrammar = JSON.parse(fs.readFileSync('./manul.tmLanguage.json', 'utf-8'));
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,14 +20,14 @@ export default defineConfig({
     locales: ['en', 'zh'],
     defaultLocale: 'en',
     routing: {
-      prefixDefaultLocale: true
+      prefixDefaultLocale: false
     }
   },
 
   integrations: [icon(), expressiveCode({
     themes: ['github-dark'], 
     shiki: {
-      langs: [kiwiGrammar]
+      langs: [manulGrammar]
     }
   })],
 });

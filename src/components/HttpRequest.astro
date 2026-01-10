@@ -87,8 +87,8 @@ const t = useTranslations(lang)
     })
 
     const btn = document.getElementById('http-request-send') as HTMLButtonElement
-    const host = import.meta.env.PUBLIC_KIWI_HOST
-    const appId = import.meta.env.PUBLIC_KIWI_APP_ID
+    const host = import.meta.env.PUBLIC_MANUL_HOST
+    const appId = import.meta.env.PUBLIC_MANUL_APP_ID
 
     async function sendRequest(rawString: string) {
         const [headSection, ...bodyParts] = rawString.split(/\n\s*\n/)

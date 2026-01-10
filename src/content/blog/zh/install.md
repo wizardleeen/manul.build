@@ -1,6 +1,6 @@
 ---
 title: 安装指南
-desc: Kiwi 安装与快速上手
+desc: Manul 安装与快速上手
 date: 2026-01-06
 ---
 
@@ -8,7 +8,7 @@ date: 2026-01-06
 运行以下命令下载并执行安装脚本：
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://kiwi.dev/install.sh | sh
+curl --proto '=https' --tlsv1.2 -sSf https://manul-lang.org/install.sh | sh
 ```
 
 ### 2. 重载 Shell 配置
@@ -22,24 +22,24 @@ source ~/.zshrc
 检查版本号以确认安装成功：
 
 ```bash
-kiwi --version
+manul --version
 ```
 
 ### 4. 快速开始
 创建一个简单的测试项目来验证部署流程：
 
 ```bash
-mkdir kiwi-test
-cd kiwi-test
+mkdir manul-test
+cd manul-test
 mkdir src
 
 # 创建定义文件
-cat << EOF > test.kiwi
+cat << EOF > test.manul
 class Product(var name: string)
 EOF
 
 # 执行部署
-kiwi deploy
+manul deploy
 ```
 
 **接口测试：**

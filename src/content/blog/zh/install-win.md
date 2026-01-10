@@ -1,6 +1,6 @@
 ---
 title: 安装指南 (Windows)
-desc: 在 Windows 上安装与快速上手 Kiwi
+desc: 在 Windows 上安装与快速上手 Manul
 date: 2026-01-06
 ---
 
@@ -8,11 +8,11 @@ date: 2026-01-06
 在 PowerShell 中运行以下命令下载并安装二进制文件：
 
 ```powershell
-irm https://kiwi.dev/install.ps1 | iex
+irm https://manul-lang.org/install.ps1 | iex
 ```
 
 ### 2. 配置环境
-为了更新系统路径并确保 `kiwi` 命令被正确识别，您通常需要重启终端会话。
+为了更新系统路径并确保 `manul` 命令被正确识别，您通常需要重启终端会话。
 
 *关闭当前的 PowerShell 窗口并重新打开一个新的窗口。*
 
@@ -20,7 +20,7 @@ irm https://kiwi.dev/install.ps1 | iex
 检查版本号以确认安装成功：
 
 ```powershell
-kiwi --version
+manul --version
 ```
 
 ### 4. 快速开始
@@ -29,15 +29,15 @@ kiwi --version
 **初始化项目：**
 
 ```powershell
-mkdir kiwi-test
-cd kiwi-test
+mkdir manul-test
+cd manul-test
 mkdir src
 
 # 创建定义文件
-"class Product(var name: string)" | Set-Content test.kiwi
+"class Product(var name: string)" | Set-Content test.manul
 
 # 执行部署
-kiwi deploy
+manul deploy
 ```
 
 **接口测试：**

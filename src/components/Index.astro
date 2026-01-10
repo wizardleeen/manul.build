@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro"
+import {useTranslations} from '../i18n/ui.ts'
+import TryKiwi from "./TryManul.astro"
+import WhyKiwi from "./WhyManul.astro"
+import Hero from "./Hero.astro"
+
+const {lang} = Astro.props
+const t = useTranslations(lang)
+
+const code = "class Product(var name: string, price: double)"
+---
+
+<Layout title={t('manul.lang')}>
+    <div class="space-y-8">
+        <Hero/>
+        <TryKiwi/>
+        <WhyKiwi/>
+    </div>
+</Layout>

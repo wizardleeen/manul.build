@@ -18,7 +18,7 @@ const t = useTranslations(lang)
         </div>
         <div>
             <CodeBlock>
-                <span id="install-cmd">curl --proto '=https' --tlsv1.2 -sSf https://kiwi.dev/install.sh | sh</span>
+                <span id="install-cmd">curl --proto '=https' --tlsv1.2 -sSf https://manul-lang.org/install.sh | sh</span>
             </CodeBlock>
         </div>
     </div>
@@ -30,7 +30,7 @@ const t = useTranslations(lang)
         const cmdSpan = document.getElementById("install-cmd");
         if (cmdSpan) {
             // Standard PowerShell command to download and execute a script
-            cmdSpan.innerText = "iwr https://kiwi.dev/install.ps1 -useb | iex";
+            cmdSpan.innerText = "iwr https://manul-lang.org/install.ps1 -useb | iex";
         }
         const getStarted = document.getElementById("get-stated")
         if (getStarted) {

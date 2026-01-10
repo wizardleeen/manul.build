@@ -1,31 +1,31 @@
 {
-    "name": "kiwi",
-    "scopeName": "source.kiwi",
+    "name": "manul",
+    "scopeName": "source.manul",
     "patterns": [
       {
         "match": "\\b(class|fn|var|require)\\b",
-        "name": "keyword.control.kiwi"
+        "name": "keyword.control.manul"
       },
       {
         "match": "\\b(string|double|int|bool)\\b",
-        "name": "support.type.kiwi"
+        "name": "support.type.manul"
       },
       {
         "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?=\\s*\\()",
-        "name": "entity.name.function.kiwi"
+        "name": "entity.name.function.manul"
       },
       {
         "begin": "\"",
         "end": "\"",
-        "name": "string.quoted.double.kiwi"
+        "name": "string.quoted.double.manul"
       },
       {
         "match": "\\b\\d+(\\.\\d+)?\\b",
-        "name": "constant.numeric.kiwi"
+        "name": "constant.numeric.manul"
       },
       {
         "match": "//.*$",
-        "name": "comment.line.double-slash.kiwi"
+        "name": "comment.line.double-slash.manul"
       }
     ]
   }
