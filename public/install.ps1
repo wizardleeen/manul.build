@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 
 # Configuration
 $ManulVersion = "0.0.1"
-$Repo = "wizardleeen/manul"
+$RepoPath = "wizardleeen/manul"
 $InstallDir = "$env:USERPROFILE\.manul"
 $BinDir = "$InstallDir\bin"
 
@@ -41,19 +41,50 @@ if ($Arch -eq "AMD64") {
     exit 1
 }
 
-$DownloadUrl = "https://github.com/$Repo/releases/download/$ManulVersion/$AssetName"
+# -----------------------------------------------------------------------------
+# 1.5. Detect Region (GitHub vs Gitee)
+# -----------------------------------------------------------------------------
+$BaseDomain = "github.com"
+Write-Host "Detecting region to select best mirror..."
+
+try {
+    # We use .NET WebRequest to enforce a strict timeout (2 seconds)
+    # Standard Invoke-RestMethod in PS 5.1 doesn't support short timeouts well
+    $Request = [System.Net.WebRequest]::Create("https://ipapi.co/country_code")
+    $Request.Timeout = 2000 # 2000ms = 2 seconds
+    $Response = $Request.GetResponse()
+    $Stream = $Response.GetResponseStream()
+    $Reader = New-Object System.IO.StreamReader($Stream)
+    $CountryCode = $Reader.ReadToEnd().Trim()
+
+    # Cleanup
+    $Reader.Close()
+    $Response.Close()
+
+    if ($CountryCode -eq "CN") {
+        Write-Yellow "China region detected (CN). Switching to Gitee mirror."
+        $BaseDomain = "gitee.com"
+    } else {
+        Write-Host "Using default mirror ($BaseDomain)."
+    }
+} catch {
+    # If API fails or times out, default to GitHub
+    Write-Host "Region detection skipped or timed out. Using default mirror ($BaseDomain)."
+}
+
+$DownloadUrl = "https://$BaseDomain/$RepoPath/releases/download/$ManulVersion/$AssetName"
 
 # -----------------------------------------------------------------------------
-# 1.5 Check Prerequisites (Visual C++ Redistributable)
+# 2. Check Prerequisites (Visual C++ Redistributable)
 # -----------------------------------------------------------------------------
 Write-Host "Checking system prerequisites..."
 $VcInstalled = Test-Path $VcRegKey
 
 if (-not $VcInstalled) {
     Write-Yellow "Visual C++ Redistributable is missing. Installing..."
-    
-    $VcTempFile = Join-Path [System.IO.Path]::GetTempPath() "vc_redist_installer.exe"
-    
+
+    $VcTempFile = Join-Path $env:TEMP "vc_redist_installer.exe"
+
     Write-Host "Downloading VC++ Redistributable..."
     try {
         Invoke-WebRequest -Uri $VcRedistUrl -OutFile $VcTempFile -UseBasicParsing
@@ -64,11 +95,11 @@ if (-not $VcInstalled) {
 
     Write-Blue "Requesting permission to install VC++ Redistributable..."
     Write-Host "(A User Account Control (UAC) prompt may appear)"
-    
+
     try {
         # Arguments: /install /passive (show progress bar but no user interaction) /norestart
         $Process = Start-Process -FilePath $VcTempFile -ArgumentList "/install", "/passive", "/norestart" -PassThru -Wait -Verb RunAs
-        
+
         # Check exit codes: 0 = Success, 3010 = Success (Reboot Required)
         if ($Process.ExitCode -eq 0 -or $Process.ExitCode -eq 3010) {
             Write-Green "VC++ Redistributable installed successfully."
@@ -88,7 +119,7 @@ if (-not $VcInstalled) {
 }
 
 # -----------------------------------------------------------------------------
-# 2. Pre-Check: Stop existing services to release file locks
+# 3. Pre-Check: Stop existing services to release file locks
 # -----------------------------------------------------------------------------
 # Unlike Linux, Windows cannot overwrite running executables.
 Write-Host "Checking for running processes..."
@@ -99,16 +130,16 @@ if ($RunningProcess) {
 }
 
 # -----------------------------------------------------------------------------
-# 3. Download & Extract
+# 4. Download & Extract
 # -----------------------------------------------------------------------------
-$TempDir = [System.IO.Path]::GetTempPath()
+$TempDir = $env:TEMP
 $ZipFile = Join-Path $TempDir $AssetName
 $ExtractDir = Join-Path $TempDir "manul_extract"
 
-Write-Host "Downloading " -NoNewline; Write-Blue $AssetName
+Write-Host "Downloading from " -NoNewline; Write-Blue $BaseDomain -NoNewline; Write-Host ": $AssetName"
 try {
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $ZipFile -UseBasicParsing
-    Write-Host " [OK]"
+    Write-Host "Download Complete."
 } catch {
     Write-Red "`nError downloading file: $_"
     exit 1
@@ -126,7 +157,7 @@ if ($SubItems.Count -eq 1 -and $SubItems[0].PSIsContainer) {
 }
 
 # -----------------------------------------------------------------------------
-# 4. Install Files
+# 5. Install Files
 # -----------------------------------------------------------------------------
 Write-Host "Installing to $InstallDir..."
 
@@ -144,7 +175,7 @@ Remove-Item $ZipFile -Force
 Remove-Item $ExtractDir -Recurse -Force
 
 # -----------------------------------------------------------------------------
-# 5. Configure Shell (Environment Variable)
+# 6. Configure Shell (Environment Variable)
 # -----------------------------------------------------------------------------
 Write-Host "Configuring shell environment..."
 
@@ -162,7 +193,7 @@ if ($CurrentPath -split ';' -notcontains $PathToAdd) {
 }
 
 # -----------------------------------------------------------------------------
-# 6. Configure Service (Scheduled Task)
+# 7. Configure Service (Scheduled Task)
 # -----------------------------------------------------------------------------
 # On Windows, we use a User Scheduled Task to mimic systemd --user / LaunchAgents
 Write-Host "Configuring " -NoNewline; Write-Blue "manul-server" -NoNewline; Write-Host " as a background task..."
@@ -175,8 +206,6 @@ if (Test-Path $ExePath) {
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
 
     # Create new task action (Start the server)
-    # We use a trick with powershell Start-Process -WindowStyle Hidden if the exe is a console app
-    # Or purely point to the exe if it handles its own windowing.
     $Action = New-ScheduledTaskAction -Execute $ExePath
 
     # Trigger at user logon
@@ -193,7 +222,7 @@ if (Test-Path $ExePath) {
 }
 
 # -----------------------------------------------------------------------------
-# 7. Completion
+# 8. Completion
 # -----------------------------------------------------------------------------
 Write-Host ""
 Write-Green "Manul installed successfully!"

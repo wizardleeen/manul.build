@@ -7,7 +7,7 @@
 set -e
 
 MANUL_VERSION="0.0.1"
-REPO="wizardleeen/manul"
+REPO_PATH="wizardleeen/manul"
 INSTALL_DIR="$HOME/.manul"
 BIN_LINK_DIR="$HOME/.local/bin"
 
@@ -46,12 +46,32 @@ else
     exit 1
 fi
 
-DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${MANUL_VERSION}/${ASSET_NAME}"
+# -----------------------------------------------------------------------------
+# 1.5. Detect Region (GitHub vs Gitee)
+# -----------------------------------------------------------------------------
+# Default to GitHub
+BASE_DOMAIN="github.com"
+
+# Check dependencies early for the region check
+if ! command -v curl > /dev/null; then printf "${RED}Error: curl required.${NC}\n"; exit 1; fi
+
+printf "Detecting region to select best mirror...\n"
+
+# Try to get country code with a 2-second timeout
+COUNTRY_CODE=$(curl -s -m 2 https://ipapi.co/country_code || echo "UNKNOWN")
+
+if [ "$COUNTRY_CODE" = "CN" ]; then
+    printf "${YELLOW}China region detected (CN). Switching to Gitee mirror.${NC}\n"
+    BASE_DOMAIN="gitee.com"
+else
+    printf "Using default mirror (${BASE_DOMAIN}).\n"
+fi
+
+DOWNLOAD_URL="https://${BASE_DOMAIN}/${REPO_PATH}/releases/download/${MANUL_VERSION}/${ASSET_NAME}"
 
 # -----------------------------------------------------------------------------
-# 2. Check Dependencies
+# 2. Check Other Dependencies
 # -----------------------------------------------------------------------------
-if ! command -v curl > /dev/null; then printf "${RED}Error: curl required.${NC}\n"; exit 1; fi
 if ! command -v tar > /dev/null; then printf "${RED}Error: tar required.${NC}\n"; exit 1; fi
 
 # -----------------------------------------------------------------------------
@@ -61,7 +81,7 @@ TEMP_DIR=$(mktemp -d)
 ARCHIVE_FILE="${TEMP_DIR}/${ASSET_NAME}"
 EXTRACT_DIR="${TEMP_DIR}/extract"
 
-printf "Downloading ${BLUE}${ASSET_NAME}${NC}...\n"
+printf "Downloading from ${BLUE}${BASE_DOMAIN}${NC}: ${ASSET_NAME}...\n"
 curl -L --fail --progress-bar "$DOWNLOAD_URL" -o "$ARCHIVE_FILE"
 
 printf "Extracting files...\n"
