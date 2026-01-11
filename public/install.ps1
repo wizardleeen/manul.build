@@ -51,7 +51,7 @@ try {
     # We use .NET WebRequest to enforce a strict timeout (2 seconds)
     # Standard Invoke-RestMethod in PS 5.1 doesn't support short timeouts well
     $Request = [System.Net.WebRequest]::Create("https://ipapi.co/country_code")
-    $Request.Timeout = 2000 # 2000ms = 2 seconds
+    $Request.Timeout = 10000
     $Response = $Request.GetResponse()
     $Stream = $Response.GetResponseStream()
     $Reader = New-Object System.IO.StreamReader($Stream)
@@ -195,24 +195,36 @@ if ($CurrentPath -split ';' -notcontains $PathToAdd) {
 # -----------------------------------------------------------------------------
 # 7. Configure Service (Scheduled Task)
 # -----------------------------------------------------------------------------
-# On Windows, we use a User Scheduled Task to mimic systemd --user / LaunchAgents
-Write-Host "Configuring " -NoNewline; Write-Blue "manul-server" -NoNewline; Write-Host " as a background task..."
+Write-Host "Configuring " -NoNewline; Write-Blue "manul-server" -NoNewline; Write-Host " as a hidden background task..."
 
 $TaskName = "ManulLanguageServer"
 $ExePath = "$BinDir\manul-server.exe"
+$VbsPath = "$BinDir\manul-launcher.vbs"
 
 if (Test-Path $ExePath) {
-    # Unregister existing if present
+    # 1. Create a VBScript shim. This is required to force the window to be hidden completely.
+    # WshShell.Run args: path, 0 (hide window), False (don't wait)
+    $VbsContent = @"
+Set WshShell = CreateObject("WScript.Shell")
+WshShell.Run """$ExePath""", 0, False
+"@
+    Set-Content -Path $VbsPath -Value $VbsContent -Force
+
+    # 2. Unregister existing task if present
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
 
-    # Create new task action (Start the server)
-    $Action = New-ScheduledTaskAction -Execute $ExePath
+    # 3. Create Action: Use wscript.exe (GUI script host) to run the VBS
+    # This prevents the black console window from flashing.
+    $Action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument """$VbsPath"""
 
-    # Trigger at user logon
+    # 4. Trigger: Run at Logon
     $Trigger = New-ScheduledTaskTrigger -AtLogOn
 
-    # Register the task (RunLevel Limited is fine for user space, doesn't need admin)
-    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Description "Manul Language Server" | Out-Null
+    # 5. Settings: Battery friendly + Infinite execution
+    $Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+
+    # 6. Register the task
+    Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Description "Manul Language Server" | Out-Null
 
     # Start it now
     Start-ScheduledTask -TaskName $TaskName

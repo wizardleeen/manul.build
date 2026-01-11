@@ -57,8 +57,8 @@ if ! command -v curl > /dev/null; then printf "${RED}Error: curl required.${NC}\
 
 printf "Detecting region to select best mirror...\n"
 
-# Try to get country code with a 2-second timeout
-COUNTRY_CODE=$(curl -s -m 2 https://ipapi.co/country_code || echo "UNKNOWN")
+# Try to get country code with a 10-second timeout
+COUNTRY_CODE=$(curl -s -m 10 https://ipapi.co/country_code || echo "UNKNOWN")
 
 if [ "$COUNTRY_CODE" = "CN" ]; then
     printf "${YELLOW}China region detected (CN). Switching to Gitee mirror.${NC}\n"
