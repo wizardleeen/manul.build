@@ -30,6 +30,8 @@ ASSET_NAME=""
 if [ "$OS" = "Linux" ]; then
     if [ "$ARCH" = "x86_64" ]; then
         ASSET_NAME="manul-linux-amd64.tar.gz"
+    elif [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+        ASSET_NAME="manul-linux-aarch64.tar.gz"
     else
         printf "${RED}Error: Linux architecture $ARCH is not supported yet.${NC}\n"
         exit 1
@@ -37,8 +39,10 @@ if [ "$OS" = "Linux" ]; then
 elif [ "$OS" = "Darwin" ]; then
     if [ "$ARCH" = "arm64" ]; then
         ASSET_NAME="manul-macos-aarch64.tar.gz"
+    elif [ "$ARCH" = "x86_64" ]; then
+        ASSET_NAME="manul-macos-amd64.tar.gz"
     else
-        printf "${RED}Error: macOS architecture $ARCH (Intel) is not supported.${NC}\n"
+        printf "${RED}Error: macOS architecture $ARCH is not supported.${NC}\n"
         exit 1
     fi
 else

@@ -32,10 +32,12 @@ if ($Arch -eq "AMD64") {
     $VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
     $VcRegKey = "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
 } elseif ($Arch -eq "ARM64") {
-    $AssetName = "manul-windows-arm64.zip"
-    # Link for Visual Studio 2015-2022 Redistributable (ARM64)
-    $VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.arm64.exe"
-    $VcRegKey = "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64"
+    Write-Yellow "Note: Native Windows Arm64 binary not available. Installing x64 binary (runs via Emulation)."
+    $AssetName = "manul-windows-amd64.zip"
+    
+    # On Arm64 Windows, we still install the x64 Redistributable for the emulated binary
+    $VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    $VcRegKey = "HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64"
 } else {
     Write-Red "Error: Architecture $Arch is not supported."
     exit 1
