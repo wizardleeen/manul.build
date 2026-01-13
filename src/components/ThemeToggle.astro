@@ -113,7 +113,7 @@ import { fade } from "astro:transitions"
 
     updateSelectedOption(getTheme())
 
-    window.matchMedia('(prefers-color-schema: dark)').addEventListener('change', (e) => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
         if (getTheme() === 'system') {
             if (e.matches)
                 doc.classList.add('dark')

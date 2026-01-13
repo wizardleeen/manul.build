@@ -21,6 +21,9 @@ Write-Blue "Starting Manul Installer (v$ManulVersion)..."
 # -----------------------------------------------------------------------------
 # 1. Detect OS & Arch
 # -----------------------------------------------------------------------------
+Write-Host "Verifying system compatibility..."
+
+# 1a. Architecture Check
 $Arch = $env:PROCESSOR_ARCHITECTURE
 $AssetName = ""
 $VcRedistUrl = ""
@@ -43,35 +46,76 @@ if ($Arch -eq "AMD64") {
     exit 1
 }
 
+# 1b. OS Version Check
+# Minimums: Windows 10 or Server 2022
+try {
+    $OsInfo = Get-CimInstance Win32_OperatingSystem
+    $MajorVer = [System.Environment]::OSVersion.Version.Major
+    $BuildNum = [System.Environment]::OSVersion.Version.Build
+    $ProductType = $OsInfo.ProductType # 1 = Client (Workstation), 2/3 = Server
+
+    if ($ProductType -eq 1) {
+        # Client: Windows 10 (Major 10)
+        if ($MajorVer -lt 10) {
+            Write-Red "Error: Manul requires Windows 10 or newer."
+            Write-Red "Detected: $($OsInfo.Caption)"
+            exit 1
+        }
+    } else {
+        # Server: Windows Server 2016 (Build 14393+)
+        if ($BuildNum -lt 14393) {
+            Write-Red "Error: Manul requires Windows Server 2016 or newer."
+            Write-Red "Detected: $($OsInfo.Caption) (Build $BuildNum)"
+            exit 1
+        }
+    }
+    Write-Green "System ($($OsInfo.Caption)) is supported."
+
+} catch {
+    Write-Yellow "Warning: Could not strictly verify OS version. Proceeding anyway."
+}
+
 # -----------------------------------------------------------------------------
 # 1.5. Detect Region (GitHub vs Gitee)
 # -----------------------------------------------------------------------------
 $BaseDomain = "github.com"
 Write-Host "Detecting region to select best mirror..."
 
-try {
-    # We use .NET WebRequest to enforce a strict timeout (2 seconds)
-    # Standard Invoke-RestMethod in PS 5.1 doesn't support short timeouts well
-    $Request = [System.Net.WebRequest]::Create("https://ipapi.co/country_code")
-    $Request.Timeout = 10000
-    $Response = $Request.GetResponse()
-    $Stream = $Response.GetResponseStream()
-    $Reader = New-Object System.IO.StreamReader($Stream)
-    $CountryCode = $Reader.ReadToEnd().Trim()
+function Test-IsChina {
+    # 1. Environment Variable Override
+    if ($env:REGION -eq "CN") { return $true }
 
-    # Cleanup
-    $Reader.Close()
-    $Response.Close()
-
-    if ($CountryCode -eq "CN") {
-        Write-Yellow "China region detected (CN). Switching to Gitee mirror."
-        $BaseDomain = "gitee.com"
-    } else {
-        Write-Host "Using default mirror ($BaseDomain)."
+    # 2. Network Connectivity Check (The "Google vs Baidu" test)
+    # Helper to check connectivity with strict timeout
+    $CheckUrl = { param($Url)
+        try {
+            $Request = [System.Net.WebRequest]::Create($Url)
+            $Request.Method = "HEAD" # Head is faster than GET
+            $Request.Timeout = 2000  # 2000ms = 2 seconds
+            $Response = $Request.GetResponse()
+            $Response.Close()
+            return $true
+        } catch {
+            return $false
+        }
     }
-} catch {
-    # If API fails or times out, default to GitHub
-    Write-Host "Region detection skipped or timed out. Using default mirror ($BaseDomain)."
+
+    # Try to connect to Google. If fails, check Baidu.
+    if (-not (&$CheckUrl "https://www.google.com")) {
+        # Google failed, check Baidu to confirm internet works and we are in CN
+        if (&$CheckUrl "https://www.baidu.com") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+if (Test-IsChina) {
+    Write-Yellow "China region detected (CN). Switching to Gitee mirror."
+    $BaseDomain = "gitee.com"
+} else {
+    Write-Host "Using default mirror ($BaseDomain)."
 }
 
 $DownloadUrl = "https://$BaseDomain/$RepoPath/releases/download/$ManulVersion/$AssetName"
@@ -224,7 +268,7 @@ WshShell.Run """$ExePath""", 0, False
 
     # 5. Settings: Battery friendly + Infinite execution
     $Settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-
+    
     # 6. Register the task
     Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Settings $Settings -Description "Manul Language Server" | Out-Null
 
@@ -243,7 +287,7 @@ Write-Green "Manul installed successfully!"
 Write-Host "Service is running as user: $env:USERNAME"
 
 if ($EnvUpdateRequired) {
-    Write-Yellow "Action Required: Restart your terminal (PowerShell/CMD) to use the 'manul' command."
+    Write-Yellow "Action Required: Restart your terminal to use the 'manul' command."
 } else {
     Write-Blue "You can run 'manul' immediately."
 }
