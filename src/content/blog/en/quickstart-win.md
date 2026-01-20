@@ -1,5 +1,5 @@
 ---
-title: Installation (Windows)
+title: Quickstart (Windows)
 desc: Getting started with Manul on Windows
 date: 2026-01-06
 ---
@@ -28,9 +28,12 @@ Create and deploy a basic "Hello World" project to ensure everything is working.
 
 **Initialize Project:**
 ```powershell
-mkdir manul-test
+mkdir -p manul-test/src
 cd manul-test
-mkdir src
+
+# Create an application and select it
+manul create-app quickstart
+manul set-app quickstart
 
 # Create a sample file
 "class Product(var name: string)" | Set-Content test.manul
@@ -43,9 +46,8 @@ manul deploy
 Send a request to the local instance to create a new product using `Invoke-RestMethod`:
 
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/product" `
+Invoke-RestMethod -Uri "http://localhost:8080/api/quickstart/product" `
   -Method Post `
-  -Headers @{ "X-App-ID" = "{app-id}" } `
   -Body '{name: "Shoes"}' `
   -ContentType "application/json"
 ```

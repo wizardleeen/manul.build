@@ -6,7 +6,10 @@
 
 set -e
 
-MANUL_VERSION="0.0.1"
+if [ -z "$MANUL_VERSION" ]; then
+    MANUL_VERSION="0.0.1-alpha"
+fi
+
 REPO_PATH="wizardleeen/manul"
 SERVICE_USER="manul"
 
@@ -308,7 +311,7 @@ elif [ "$OS" = "Linux" ]; then
 
         cat > "$SERVICE_PATH" <<EOF
 [Unit]
-Description=Manul Language Server
+Description=Manul Server
 After=network.target
 
 [Service]

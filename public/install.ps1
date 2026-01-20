@@ -5,7 +5,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$ManulVersion = "0.0.1"
+$ManulVersion = "0.0.1-alpha"
 $RepoPath = "wizardleeen/manul"
 $InstallDir = "$env:USERPROFILE\.manul"
 $BinDir = "$InstallDir\bin"
