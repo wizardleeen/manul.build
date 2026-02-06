@@ -1,8 +1,8 @@
 ---
-import { late } from "astro:schema"
 import { getLangFromUrl, useTranslations } from "../i18n/ui"
 import CodeBlock from "./CodeBlock.astro"
 
+const docsUrl = import.meta.env.PUBLIC_DOCS_URL
 const lang = getLangFromUrl(Astro.url)
 const t = useTranslations(lang)
 ---
@@ -11,7 +11,7 @@ const t = useTranslations(lang)
     <div class="max-w-content mx-auto px-4 pt-20 flex flex-col gap-6 items-center">
         <p class="text-3xl md:text-5xl font-bold text-balance text-center leading-tight">{t('hero.subtitle')}</p>
         <div>
-            <a id="get-started" href={`/${lang}/blog/quickstart`} class="bg-amber-400 px-4 lg:px-10 py-4 lg:text-xl rounded inline-block text-black">
+            <a id="get-started" href=`${docsUrl}/guides/quickstart/` class="bg-amber-400 px-4 lg:px-10 py-4 lg:text-xl rounded inline-block text-black">
                 {t('get.started')}
             </a>
         </div>
