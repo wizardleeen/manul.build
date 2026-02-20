@@ -1,9 +1,1 @@
-chore: rebrand kiwi to manul and update repository links
-
-chore(syntax): exclude 'require' from keyword list
-
-fix: prevent content overflow on mobile screens
-
-refactor: replace inline SVGs with online icons
-
-refactor: remove '/en' prefix from English routes
+trigger staging deployment
